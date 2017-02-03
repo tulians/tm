@@ -10,7 +10,9 @@ import time
 import sqlite3
 # Project specific modules.
 import utils as u
-import logger
+import logger as lg
+from cache import TaskCache
+from task import Task
 
 
 class PendingTasks(object):
@@ -19,12 +21,12 @@ class PendingTasks(object):
     def __init__(self):
         """Tasks manager constructor"""
         self.create_table("NotStarted", "WorkingOn", "Completed")
-        self.log = logger.Logger()
-        # Use this list to save the most recent new, modified, on process or
+        self.log = lg.Logger()
+        # Use this queue to save the most recent new, modified, on process or
         # completed tasks. These tasks should be saved in tuples along with
-        # their corresponding table. The length of this list should not be
-        # greater than 20 tasks.
-        self.recent_tasks = []
+        # their corresponding table. The length of this queue should not be
+        # greater than 10 tasks.
+        self.recent_tasks = TaskCache(10)
 
     def create_table(self, *tables):
         """Creates tables with the same attributestructure.
@@ -41,13 +43,14 @@ class PendingTasks(object):
                 self.cursor = self.db_connection.cursor()
                 self.cursor.execute(
                     "CREATE TABLE IF NOT EXISTS " + table_name +
-                    """(completed TEXT,
-                        created_at TEXT,
-                        modified TEXT,
-                        depends_from TEXT,
-                        priority INTEGER,
-                        description TEXT,
-                        identifier TEXT)
+                    """
+                    (completed TEXT,
+                    created_at TEXT,
+                    modified TEXT,
+                    depends_from TEXT,
+                    priority INTEGER,
+                    description TEXT,
+                    identifier TEXT)
                     """
                 )
                 self.db_connection.commit()
@@ -91,7 +94,7 @@ class PendingTasks(object):
         )
         self.db_connection.commit()
         self.db_connection.close()
-        self.recent_tasks.append((new_task, "NotStarted"))
+        self.recent_tasks.push(Task(new_task, "NotStarted"))
 
     def get_task(self, identifier, table):
         # TODO: Extend it to add multiple conditions.
