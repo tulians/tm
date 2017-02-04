@@ -28,6 +28,11 @@ class PendingTasks(object):
         # greater than 10 tasks.
         self.recent_tasks = TaskCache(10)
 
+    def __contains__(self, task):
+        return self._is_task_duplicate(task)
+
+# Public methods.
+
     def create_table(self, *tables):
         """Creates tables with the same attribute structure.
 
@@ -83,20 +88,24 @@ class PendingTasks(object):
         db_connection = sqlite3.connect("tasks.db")
         cursor = db_connection.cursor()
 
-        if not self._is_task_duplicate(task):
+        if task not in self:
             cursor.execute(
                 """
                 INSERT INTO NotStarted
                 VALUES (NULL, ?, NULL, ?, ?, ?, ?)
                 """,
-                (str(task.info["created_at"]), str(task.info["depends_from"]),
-                 task.info["priority"], task.info["description"],
+                (str(task.info["created_at"]),
+                 str(task.info["depends_from"]),
+                 task.info["priority"],
+                 task.info["description"],
                  task.info["identifier"])
             )
             self.recent_tasks.push(task)
 
         db_connection.commit()
         db_connection.close()
+
+# Private methods.
 
     # TODO: Extend it to add multiple conditions.
     def _get_task(self, identifier, table):
