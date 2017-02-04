@@ -29,7 +29,7 @@ class PendingTasks(object):
         self.recent_tasks = TaskCache(10)
 
     def create_table(self, *tables):
-        """Creates tables with the same attributestructure.
+        """Creates tables with the same attribute structure.
 
         Args:
             tables: list of names for tables.
@@ -39,9 +39,9 @@ class PendingTasks(object):
         """
         for table_name in tables:
             if table_name.isalnum():
-                self.db_connection = sqlite3.connect("tasks.db")
-                self.cursor = self.db_connection.cursor()
-                self.cursor.execute(
+                db_connection = sqlite3.connect("tasks.db")
+                cursor = db_connection.cursor()
+                cursor.execute(
                     "CREATE TABLE IF NOT EXISTS " + table_name +
                     """
                     (completed TEXT,
@@ -53,14 +53,12 @@ class PendingTasks(object):
                     identifier TEXT)
                     """
                 )
-                self.db_connection.commit()
-                self.db_connection.close()
+                db_connection.commit()
+                db_connection.close()
             else:
                 print("{} is nor alphanumeric.".format(table_name))
 
     def create_task(self, identifier, description, depends_from, priority):
-        # TODO: Check if the identifier already exists in any of the tables.
-        # Avoid duplicates. ACID!
         """Creates a new pending task.
 
         Args:
@@ -74,30 +72,34 @@ class PendingTasks(object):
         Returns:
             No data is returned.
         """
-        new_task = {
+        task = Task({
             "identifier": identifier,
             "description": description,
             "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
             "depends_from": depends_from,
             "priority": priority,
-        }
-        self.db_connection = sqlite3.connect("tasks.db")
-        self.cursor = self.db_connection.cursor()
-        self.cursor.execute(
-            """
-            INSERT INTO NotStarted
-            VALUES (NULL, ?, NULL, ?, ?, ?, ?)
-            """,
-            (str(new_task["created_at"]), str(new_task["depends_from"]),
-             new_task["priority"], new_task["description"],
-             new_task["identifier"])
-        )
-        self.db_connection.commit()
-        self.db_connection.close()
-        self.recent_tasks.push(Task(new_task, "NotStarted"))
+        }, "NotStarted")
 
-    def get_task(self, identifier, table):
-        # TODO: Extend it to add multiple conditions.
+        db_connection = sqlite3.connect("tasks.db")
+        cursor = db_connection.cursor()
+
+        if not self._is_task_duplicate(task):
+            cursor.execute(
+                """
+                INSERT INTO NotStarted
+                VALUES (NULL, ?, NULL, ?, ?, ?, ?)
+                """,
+                (str(task.info["created_at"]), str(task.info["depends_from"]),
+                 task.info["priority"], task.info["description"],
+                 task.info["identifier"])
+            )
+            self.recent_tasks.push(task)
+
+        db_connection.commit()
+        db_connection.close()
+
+    # TODO: Extend it to add multiple conditions.
+    def _get_task(self, identifier, table):
         """Get entries that meet a certain condition.
 
         Args:
@@ -105,15 +107,44 @@ class PendingTasks(object):
         Returns:
             Resulting rows of the query.
         """
-        self.db_connection = sqlite3.connect("tasks.db")
-        self.cursor = self.db_connection.cursor()
         try:
-            self.cursor.execute(
+            db_connection = sqlite3.connect("tasks.db")
+            cursor = db_connection.cursor()
+            cursor.execute(
                 "SELECT * FROM " + table + " WHERE identifier=?",
                 (identifier,)
             )
-            return self.cursor.fetchall()
+            entries = cursor.fetchall()
+            db_connection.close()
+            return entries
         except sqlite3.OperationalError as detail:
             print("Table name contains non-alphanumeric characters.")
             self.log.add(detail, time.strftime("%Y-%m-%d %H:%M:%S"))
-        self.db_connection.close()
+
+    def _is_task_duplicate(self, task):
+        """Checks if a given task is already in any of the tables.
+
+        Args:
+            task: data to look for.
+
+        Returns:
+            Boolean value depending on whether the given data is present in
+            the database.
+        """
+        if task in self.recent_tasks:
+            print("A task with that identifier already exists in the"
+                  " database.")
+            return True
+        db_connection = sqlite3.connect("tasks.db")
+        cursor = db_connection.cursor()
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table';")
+        for table in cursor.fetchall():
+            # Get the table name from tuple.
+            table_name = table[0]
+            matches = self._get_task(task.info["identifier"], table_name)
+            if len(matches) > 0:
+                db_connection.close()
+                return True
+        db_connection.close()
+        return False

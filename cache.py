@@ -52,6 +52,7 @@ class TaskCache(Queue):
             super(TaskCache, self).push(data)
 
     def update(self, data, new_state=None):
+        """Updates information or belonging table of a record in the cache."""
         for index in xrange(self.length):
             task = self.queue[index]
             ids_match = task.info["identifier"] == data.info["identifier"]
