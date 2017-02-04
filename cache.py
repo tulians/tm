@@ -51,6 +51,22 @@ class TaskCache(Queue):
         else:
             super(TaskCache, self).push(data)
 
+    def pop(self, data):
+        for index in xrange(self.length):
+            task = self.queue[index]
+            if isinstance(data, tuple):
+                # 'data' is a tuple (id, table)
+                ids_match = task.info["identifier"] == data[0]
+                tables_match = task.table == data[1]
+            else:
+                ids_match = task.info["identifier"] == data.info["identifier"]
+                tables_match = task.table == data.table
+            if ids_match and tables_match:
+                task_to_pop = task
+                del self.queue[index]
+                return task_to_pop
+        print("The given task is not currently present in the cache.")
+
     def update(self, data, new_state=None):
         """Updates information or belonging table of a record in the cache."""
         for index in xrange(self.length):

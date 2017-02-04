@@ -31,8 +31,9 @@ class PendingTasks(object):
     def __contains__(self, task):
         return self._is_task_duplicate(task)
 
-# Public methods.
+# --> Public methods.
 
+# Table methods.
     def create_table(self, *tables):
         """Creates tables with the same attribute structure.
 
@@ -50,6 +51,7 @@ class PendingTasks(object):
                     "CREATE TABLE IF NOT EXISTS " + table_name +
                     """
                     (completed TEXT,
+                    started TEXT,
                     created_at TEXT,
                     modified TEXT,
                     depends_from TEXT,
@@ -61,7 +63,41 @@ class PendingTasks(object):
                 db_connection.commit()
                 db_connection.close()
             else:
-                print("{} is nor alphanumeric.".format(table_name))
+                print("{} is not alphanumeric.".format(table_name))
+
+    def drop_table(self, *tables):
+        """Deletes specified tables."""
+        for table_name in tables:
+            if table_name.isalnum():
+                db_connection = sqlite3.connect("tasks.db")
+                cursor = db_connection.cursor()
+                cursor.execute(
+                    "DROP TABLE " + table_name
+                )
+                db_connection.commit()
+                db_connection.close()
+            else:
+                print("{} is not alphanumeric.".format(table_name))
+
+    def add_task_into(self, table, task):
+        """Adds a given task to a given table."""
+        success = False
+        db_connection = sqlite3.connect("tasks.db")
+        cursor = db_connection.cursor()
+        if task not in self:
+            cursor.execute(
+                "INSERT INTO " + table +
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (str(task.info["completed"]), str(task.info["started"]),
+                 str(task.info["created_at"]), str(task.info["modified"]),
+                 str(task.info["depends_from"]), task.info["priority"],
+                 task.info["description"], task.info["identifier"])
+            )
+            success = True
+        db_connection.commit()
+        db_connection.close()
+        return success
+# Task methods.
 
     def create_task(self, identifier, description, depends_from, priority):
         """Creates a new pending task.
@@ -78,34 +114,60 @@ class PendingTasks(object):
             No data is returned.
         """
         task = Task({
-            "identifier": identifier,
-            "description": description,
+            "completed": None,
+            "started": None,
             "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "modified": None,
             "depends_from": depends_from,
             "priority": priority,
+            "description": description,
+            "identifier": identifier
         }, "NotStarted")
 
-        db_connection = sqlite3.connect("tasks.db")
-        cursor = db_connection.cursor()
+        status = self.add_task_into(
+            "NotStarted", task
+        )
 
-        if task not in self:
-            cursor.execute(
-                """
-                INSERT INTO NotStarted
-                VALUES (NULL, ?, NULL, ?, ?, ?, ?)
-                """,
-                (str(task.info["created_at"]),
-                 str(task.info["depends_from"]),
-                 task.info["priority"],
-                 task.info["description"],
-                 task.info["identifier"])
-            )
+        if status:
             self.recent_tasks.push(task)
 
-        db_connection.commit()
+    def start_task(self, identifier):
+        pass
+
+    def update_task():
+        pass
+
+    def delete_task(self, identifier, table):
+        if identifier and table:
+            try:
+                db_connection = sqlite3.connect("tasks.db")
+                cursor = db_connection.cursor()
+                cursor.execute(
+                    "DELETE FROM " + table + " WHERE identifier=?",
+                    (identifier,)
+                )
+                db_connection.commit()
+                db_connection.close()
+                return self.recent_tasks.pop((identifier, table))
+            except sqlite3.OperationalError as detail:
+                print("Table name contains non-alphanumeric characters.")
+                self.log.add(detail, time.strftime("%Y-%m-%d %H:%M:%S"))
+        else:
+            print("Cant delete the desired task. Please, check the"
+                  " parameters.")
+
+    def completed_task():
+        pass
+
+    def dump_db(self, name="dump.sql"):
+        """Dumps the content of tasks.db into a file."""
+        db_connection = sqlite3.connect('tasks.db')
+        with open(name, 'w') as f:
+            for line in db_connection.iterdump():
+                f.write('%s\n' % line)
         db_connection.close()
 
-# Private methods.
+# --> Private methods.
 
     # TODO: Extend it to add multiple conditions.
     def _get_task(self, identifier, table):
