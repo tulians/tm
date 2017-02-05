@@ -12,7 +12,7 @@ import sqlite3
 import utils as u
 import logger as lg
 from cache import TaskCache
-from task import Task
+from task import Task, labels
 
 
 class PendingTasks(object):
@@ -79,12 +79,12 @@ class PendingTasks(object):
             else:
                 print("{} is not alphanumeric.".format(table_name))
 
-    def add_task_into(self, table, task):
+    def add_task_into(self, table, task, moving_task=False):
         """Adds a given task to a given table."""
         success = False
         db_connection = sqlite3.connect("tasks.db")
         cursor = db_connection.cursor()
-        if task not in self:
+        if (task not in self) or moving_task:
             cursor.execute(
                 "INSERT INTO " + table +
                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -130,12 +130,67 @@ class PendingTasks(object):
 
         if status:
             self.recent_tasks.push(task)
+        # TODO: Add else case.
 
     def start_task(self, identifier):
-        pass
+        task = self._get_task(identifier, "NotStarted")
+        if task:
+            started_task_info = dict(zip(labels, task[0]))
+            started_task_info["started"] = time.strftime("%Y-%m-%d %H:%M:%S")
+            started_task = Task(started_task_info, "WorkingOn")
+            status = self.add_task_into("WorkingOn", started_task, True)
+            self.delete_task(identifier, "NotStarted")
+            if status:
+                if started_task in self.recent_tasks:
+                    self.recent_tasks.update(started_task, "WorkingOn")
+                else:
+                    self.recent_tasks.push(started_task)
+            # TODO: Add else case.
+        else:
+            print("There is no task with that identifier waiting to be"
+                  " started.")
 
-    def update_task():
-        pass
+    def update_task(self, identifier, **update_values):
+        table = self._get_table(identifier)
+        if table:
+            task = self._get_task(identifier, table)
+            modified_task_info = dict(zip(labels, task[0]))
+
+            for key, value in update_values.items():
+                    modified_task_info[key] = value
+            modified_task_info["modified"] = time.strftime("%Y-%m-%d %H:%M:%S")
+
+            modified_task = Task(modified_task_info, table)
+
+            db_connection = sqlite3.connect("tasks.db")
+            cursor = db_connection.cursor()
+            cursor.execute(
+                "UPDATE " + table +
+                """
+                SET completed=?, started=?, created_at=?, modified=?,
+                depends_from=?, priority=?, description=?, identifier=?
+                WHERE identifier=?
+                """,
+                (modified_task.info["completed"],
+                 modified_task.info["started"],
+                 modified_task.info["created_at"],
+                 modified_task.info["modified"],
+                 modified_task.info["depends_from"],
+                 modified_task.info["priority"],
+                 modified_task.info["description"],
+                 modified_task.info["identifier"],
+                 modified_task.info["identifier"])
+            )
+            db_connection.commit()
+            db_connection.close()
+
+            if modified_task in self.recent_tasks:
+                self.recent_tasks.update(modified_task)
+            else:
+                self.recent_tasks.push(modified_task)
+
+        else:
+            print("The given identifier is not present in any table.")
 
     def delete_task(self, identifier, table):
         if identifier and table:
@@ -156,8 +211,23 @@ class PendingTasks(object):
             print("Cant delete the desired task. Please, check the"
                   " parameters.")
 
-    def completed_task():
-        pass
+    def completed_task(self, identifier):
+        task = self._get_task(identifier, "WorkingOn")
+        if task:
+            started_task_info = dict(zip(labels, task[0]))
+            started_task_info["completed"] = time.strftime("%Y-%m-%d %H:%M:%S")
+            started_task = Task(started_task_info, "Completed")
+            status = self.add_task_into("Completed", started_task, True)
+            self.delete_task(identifier, "WorkingOn")
+            if status:
+                if started_task in self.recent_tasks:
+                    self.recent_tasks.update(started_task, "Completed")
+                else:
+                    self.recent_tasks.push(started_task)
+            # TODO: Add else case.
+        else:
+            print("There is no task with that identifier waiting to be"
+                  " completed.")
 
     def dump_db(self, name="dump.sql"):
         """Dumps the content of tasks.db into a file."""
@@ -204,7 +274,7 @@ class PendingTasks(object):
         """
         if task in self.recent_tasks:
             print("A task with that identifier already exists in the"
-                  " database.")
+                  " cache.")
             return True
         db_connection = sqlite3.connect("tasks.db")
         cursor = db_connection.cursor()
@@ -219,3 +289,16 @@ class PendingTasks(object):
                 return True
         db_connection.close()
         return False
+
+    def _get_table(self, identifier):
+        db_connection = sqlite3.connect("tasks.db")
+        cursor = db_connection.cursor()
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table';")
+        for table in cursor.fetchall():
+            # Get the table name from tuple.
+            table_name = table[0]
+            matches = self._get_task(identifier, table_name)
+            if len(matches) > 0:
+                return table[0]
+        return None

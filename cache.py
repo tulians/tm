@@ -52,7 +52,7 @@ class TaskCache(Queue):
             super(TaskCache, self).push(data)
 
     def pop(self, data):
-        for index in xrange(self.length):
+        for index in range(self.length):
             task = self.queue[index]
             if isinstance(data, tuple):
                 # 'data' is a tuple (id, table)
@@ -69,10 +69,12 @@ class TaskCache(Queue):
 
     def update(self, data, new_state=None):
         """Updates information or belonging table of a record in the cache."""
-        for index in xrange(self.length):
+        for index in range(self.length):
             task = self.queue[index]
+
             ids_match = task.info["identifier"] == data.info["identifier"]
             tables_match = task.table == data.table
+
             if ids_match and tables_match:
                 for key in data.info.keys():
                     task.info[key] = data.info[key]
@@ -82,6 +84,7 @@ class TaskCache(Queue):
                     task.table = new_state
                 self.queue[index], self.queue[-1] = (self.queue[-1],
                                                      self.queue[index])
-                break
+                return True
         print("There is no record with the same identifier as the "
               "given one.")
+        return False
