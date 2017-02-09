@@ -36,10 +36,8 @@ class PendingTasks(object):
 # Table methods.
     def create_table(self, *tables):
         """Creates tables with the same attribute structure.
-
         Args:
             tables: list of names for tables.
-
         Returns:
             No data is returned.
         """
@@ -101,7 +99,6 @@ class PendingTasks(object):
 
     def create_task(self, identifier, description, depends_from, priority):
         """Creates a new pending task.
-
         Args:
             identifier: short string that uniquely identifies the task.
             description: string that contains a verbose explanation of the new
@@ -109,7 +106,6 @@ class PendingTasks(object):
             depends_from: list that contains the task ids that should be first
             compeleted before.
             priority: associated integer value.
-
         Returns:
             No data is returned.
         """
@@ -123,29 +119,51 @@ class PendingTasks(object):
             "description": description,
             "identifier": identifier
         }, "NotStarted")
-
         status = self.add_task_into(
             "NotStarted", task
         )
-
         if status:
             self.recent_tasks.push(task)
-        # TODO: Add else case.
+        else:
+            print("There were problems when adding the created task"
+                  " to the 'NotStarted' table.")
 
     def start_task(self, identifier):
         task = self._get_task(identifier, "NotStarted")
         if task:
             started_task_info = dict(zip(labels, task[0]))
-            started_task_info["started"] = time.strftime("%Y-%m-%d %H:%M:%S")
-            started_task = Task(started_task_info, "WorkingOn")
-            status = self.add_task_into("WorkingOn", started_task, True)
-            self.delete_task(identifier, "NotStarted")
-            if status:
-                if started_task in self.recent_tasks:
-                    self.recent_tasks.update(started_task, "WorkingOn")
+            depends_from = u.list_from_string(
+                started_task_info["depends_from"])
+            print depends_from
+            if not depends_from:
+                started_task_info["started"] = time.strftime("%Y-%m-%d "
+                                                             "%H:%M:%S")
+                started_task = Task(started_task_info, "WorkingOn")
+                status = self.add_task_into("WorkingOn", started_task, True)
+                self.delete_task(identifier, "NotStarted")
+                if status:
+                    if started_task in self.recent_tasks:
+                        self.recent_tasks.update(started_task, "WorkingOn")
+                    else:
+                        self.recent_tasks.push(started_task)
                 else:
-                    self.recent_tasks.push(started_task)
-            # TODO: Add else case.
+                    print("There were problems when adding the started task"
+                          " to the 'WorkingOn' table.")
+            else:
+                incomplete_tasks = self._meets_dependencies(depends_from)
+                msg = ("The current task ('{}') depends from ".format(
+                    started_task_info["identifier"]))
+                if len(incomplete_tasks) == 1:
+                    msg += ("task '{}', which has to be completed before"
+                            " starting this task.".format(incomplete_tasks[0]))
+                else:
+                    msg += ("tasks {}. Please complete them "
+                            "first.".format(incomplete_tasks))
+                    msg = u.replace_last_comma(msg)
+                chars_to_remove = ["[", "]"]
+                for char in chars_to_remove:
+                    msg = msg.replace(char, "")
+                return msg
         else:
             print("There is no task with that identifier waiting to be"
                   " started.")
@@ -155,13 +173,10 @@ class PendingTasks(object):
         if table:
             task = self._get_task(identifier, table)
             modified_task_info = dict(zip(labels, task[0]))
-
             for key, value in update_values.items():
                     modified_task_info[key] = value
             modified_task_info["modified"] = time.strftime("%Y-%m-%d %H:%M:%S")
-
             modified_task = Task(modified_task_info, table)
-
             db_connection = sqlite3.connect("tasks.db")
             cursor = db_connection.cursor()
             cursor.execute(
@@ -175,7 +190,7 @@ class PendingTasks(object):
                  modified_task.info["started"],
                  modified_task.info["created_at"],
                  modified_task.info["modified"],
-                 modified_task.info["depends_from"],
+                 str(modified_task.info["depends_from"]),
                  modified_task.info["priority"],
                  modified_task.info["description"],
                  modified_task.info["identifier"],
@@ -183,12 +198,10 @@ class PendingTasks(object):
             )
             db_connection.commit()
             db_connection.close()
-
             if modified_task in self.recent_tasks:
                 self.recent_tasks.update(modified_task)
             else:
                 self.recent_tasks.push(modified_task)
-
         else:
             print("The given identifier is not present in any table.")
 
@@ -224,7 +237,9 @@ class PendingTasks(object):
                     self.recent_tasks.update(started_task, "Completed")
                 else:
                     self.recent_tasks.push(started_task)
-            # TODO: Add else case.
+            else:
+                print("There were problems when adding the completed task"
+                      " to the 'Completed' table.")
         else:
             print("There is no task with that identifier waiting to be"
                   " completed.")
@@ -237,12 +252,14 @@ class PendingTasks(object):
                 f.write('%s\n' % line)
         db_connection.close()
 
+    def generate_report(self, task):
+        pass
+
 # --> Private methods.
 
     # TODO: Extend it to add multiple conditions.
     def _get_task(self, identifier, table):
         """Get entries that meet a certain condition.
-
         Args:
             pending
         Returns:
@@ -259,15 +276,14 @@ class PendingTasks(object):
             db_connection.close()
             return entries
         except sqlite3.OperationalError as detail:
-            print("Table name contains non-alphanumeric characters.")
+            print("Table name contains non-alphanumeric characters or"
+                  " is non-existent.")
             self.log.add(detail, time.strftime("%Y-%m-%d %H:%M:%S"))
 
     def _is_task_duplicate(self, task):
         """Checks if a given task is already in any of the tables.
-
         Args:
             task: data to look for.
-
         Returns:
             Boolean value depending on whether the given data is present in
             the database.
@@ -302,3 +318,15 @@ class PendingTasks(object):
             if len(matches) > 0:
                 return table[0]
         return None
+
+    def _meets_dependencies(self, dependencies):
+        incomplete_tasks = []
+        db_connection = sqlite3.connect("tasks.db")
+        cursor = db_connection.cursor()
+        for dependency in dependencies:
+            cursor.execute(
+                "SELECT * FROM Completed WHERE identifier=?",
+                (dependency,))
+            if not cursor.fetchall():
+                incomplete_tasks.append(str(dependency))
+        return incomplete_tasks

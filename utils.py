@@ -6,12 +6,26 @@
 """Provides a series of methods to simplify operations."""
 
 
-def list_from_string(string):
+def numberical_list_from_string(string):
     resulting_list = []
     dont_include = ["[", "]", ","]
     for char in string:
         if char not in dont_include:
             resulting_list.append(int(char))
+    return resulting_list
+
+
+def list_from_string(string):
+    resulting_list = []
+    list_parts = ["[", "]"]
+    for part in list_parts:
+        string = string.replace(part, "")
+    string = string.replace(" ", "")
+    string = string.split(",")
+    if string == ['']:
+        return []
+    for substring in string:
+        resulting_list.append(substring.replace("'", ""))
     return resulting_list
 
 
