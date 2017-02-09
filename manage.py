@@ -129,6 +129,15 @@ class PendingTasks(object):
                   " to the 'NotStarted' table.")
 
     def start_task(self, identifier):
+        """Sets a task as started, after checking dependencies.
+        Args:
+            identifier: string that uniquely identifies the task.
+        Returns:
+            - If the task was correctly added to the 'WorkingOn' table
+            the recently started task is returned.
+            - Instead, if the task depends from previous uncompleted tasks
+            an informational message is returned.
+        """
         task = self._get_task(identifier, "NotStarted")
         if task:
             started_task_info = dict(zip(labels, task[0]))
@@ -140,12 +149,16 @@ class PendingTasks(object):
                                                              "%H:%M:%S")
                 started_task = Task(started_task_info, "WorkingOn")
                 status = self.add_task_into("WorkingOn", started_task, True)
-                self.delete_task(identifier, "NotStarted")
+                self.delete_task(identifier)
+                print("Successfully labeled task as started.")
                 if status:
                     if started_task in self.recent_tasks:
                         self.recent_tasks.update(started_task, "WorkingOn")
+                        print("Task updated in cache.")
                     else:
                         self.recent_tasks.push(started_task)
+                        print("Task added to cache.")
+                    return started_task
                 else:
                     print("There were problems when adding the started task"
                           " to the 'WorkingOn' table.")
@@ -169,6 +182,13 @@ class PendingTasks(object):
                   " started.")
 
     def update_task(self, identifier, **update_values):
+        """Updates task information, no matter the table the task is in.
+        Args:
+            identifier: string that uniquely identifies the task.
+            update_values: key-value arguments of task information to update.
+        Returns:
+            No data is returned.
+        """
         table = self._get_table(identifier)
         if table:
             task = self._get_task(identifier, table)
@@ -200,12 +220,22 @@ class PendingTasks(object):
             db_connection.close()
             if modified_task in self.recent_tasks:
                 self.recent_tasks.update(modified_task)
+                print("Information updated.")
             else:
                 self.recent_tasks.push(modified_task)
+                print("Task added to cache.")
         else:
             print("The given identifier is not present in any table.")
 
-    def delete_task(self, identifier, table):
+    def delete_task(self, identifier):
+        """Deletes a task in any table.
+        Args:
+            identifier: string that uniquely identifies the task.
+        Returns:
+            If the task with the given identifier exists in the cache
+            it is returned after its deletition.
+        """
+        table = self._get_table(identifier)
         if identifier and table:
             try:
                 db_connection = sqlite3.connect("tasks.db")
@@ -225,18 +255,28 @@ class PendingTasks(object):
                   " parameters.")
 
     def completed_task(self, identifier):
+        """Labels a task as completed.
+        Args:
+            identifier: string that uniquely identifies the task.
+        Returns:
+            The recently labeled task is returned.
+        """
         task = self._get_task(identifier, "WorkingOn")
         if task:
-            started_task_info = dict(zip(labels, task[0]))
-            started_task_info["completed"] = time.strftime("%Y-%m-%d %H:%M:%S")
-            started_task = Task(started_task_info, "Completed")
-            status = self.add_task_into("Completed", started_task, True)
-            self.delete_task(identifier, "WorkingOn")
+            completed_task_info = dict(zip(labels, task[0]))
+            completed_task_info["completed"] = time.strftime(
+                "%Y-%m-%d %H:%M:%S")
+            completed_task = Task(completed_task_info, "Completed")
+            status = self.add_task_into("Completed", completed_task, True)
+            self.delete_task(identifier)
             if status:
-                if started_task in self.recent_tasks:
-                    self.recent_tasks.update(started_task, "Completed")
+                if completed_task in self.recent_tasks:
+                    self.recent_tasks.update(completed_task, "Completed")
+                    print("Information updated.")
                 else:
-                    self.recent_tasks.push(started_task)
+                    self.recent_tasks.push(completed_task)
+                    print("Task added to cache.")
+                return completed_task
             else:
                 print("There were problems when adding the completed task"
                       " to the 'Completed' table.")
@@ -307,6 +347,7 @@ class PendingTasks(object):
         return False
 
     def _get_table(self, identifier):
+        """Returns the table that holds a certain task."""
         db_connection = sqlite3.connect("tasks.db")
         cursor = db_connection.cursor()
         cursor.execute(
@@ -320,6 +361,7 @@ class PendingTasks(object):
         return None
 
     def _meets_dependencies(self, dependencies):
+        """Returns all incomplete tasks."""
         incomplete_tasks = []
         db_connection = sqlite3.connect("tasks.db")
         cursor = db_connection.cursor()
