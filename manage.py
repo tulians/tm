@@ -143,7 +143,6 @@ class PendingTasks(object):
             started_task_info = dict(zip(labels, task[0]))
             depends_from = u.list_from_string(
                 started_task_info["depends_from"])
-            print depends_from
             if not depends_from:
                 started_task_info["started"] = time.strftime("%Y-%m-%d "
                                                              "%H:%M:%S")
@@ -292,8 +291,53 @@ class PendingTasks(object):
                 f.write('%s\n' % line)
         db_connection.close()
 
-    def generate_report(self, task):
-        pass
+    def generate_report(self, identifier):
+        """Generates a report with the state of a given task.
+        Args:
+            identifier: string that uniquely identifies the task.
+        Returns:
+            No data is returned.
+        """
+        table = self._get_table(identifier)
+        if identifier and table:
+            task = self._get_task(identifier, table)
+            if task:
+                task_info = dict(zip(labels, task[0]))
+                depends_from = u.list_from_string(task_info["depends_from"])
+                incomplete_tasks = self._meets_dependencies(depends_from)
+                msg = ("Task '{}' depends from ".format(
+                    task_info["identifier"]))
+                if len(incomplete_tasks) == 0:
+                    msg += ("no other task(s).")
+                elif len(incomplete_tasks) == 1:
+                    msg += ("task '{}', which has to be completed before"
+                            " starting this task.".format(incomplete_tasks[0]))
+                else:
+                    msg += ("tasks {}. Please complete them"
+                            " first.".format(incomplete_tasks))
+                    msg = u.replace_last_comma(msg)
+                chars_to_remove = ["[", "]"]
+                for char in chars_to_remove:
+                    msg = msg.replace(char, "")
+                print(
+                    "Task #{0}:\n"
+                    "- Description: {1}\n"
+                    "- Priority: {2}\n"
+                    "- Dependencies {3}\n"
+                    "- Created at: {4}\n"
+                    "- Started at: {5}\n"
+                    "- Completed at: {6}\n"
+                    "- Modified at: {7}\n".format(
+                        task_info["identifier"],
+                        task_info["description"],
+                        task_info["priority"],
+                        msg,
+                        task_info["created_at"],
+                        task_info["started"],
+                        task_info["completed"],
+                        task_info["modified"]
+                    )
+                )
 
 # --> Private methods.
 
