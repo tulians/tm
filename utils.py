@@ -1,4 +1,4 @@
-# tasks - Task management.
+# tm - Task management.
 # Utilities module.
 # Author: Julian Ailan
 # ===================================

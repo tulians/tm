@@ -1,4 +1,4 @@
-# tasks - Task management library.
+# tm - Task management library.
 # Task management module.
 # Author: Julian Ailan
 # ===================================
@@ -6,11 +6,12 @@
 """Provides a class for managing pending tasks tables."""
 
 # Built-in modules.
+import os
 import time
 import sqlite3
 # Project specific modules.
 import utils as u
-import logger as lg
+from logger import Logger
 from cache import TaskCache
 from task import Task, labels
 
@@ -18,10 +19,10 @@ from task import Task, labels
 class PendingTasks(object):
     """Manages the creation, modification and status of pending tasks."""
 
-    def __init__(self):
+    def __init__(self, current_directory):
         """Tasks manager constructor"""
         self.create_table("NotStarted", "WorkingOn", "Completed")
-        self.log = lg.Logger()
+        self.log = Logger(current_directory)
         # Use this queue to save the most recent new, modified, on process or
         # completed tasks. These tasks should be saved in tuples along with
         # their corresponding table. The length of this queue should not be
@@ -248,7 +249,8 @@ class PendingTasks(object):
                 return self.recent_tasks.pop((identifier, table))
             except sqlite3.OperationalError as detail:
                 print("Table name contains non-alphanumeric characters.")
-                self.log.add(detail, time.strftime("%Y-%m-%d %H:%M:%S"))
+                self.log.add("delete", detail, time.strftime(
+                    "%Y-%m-%d %H:%M:%S"))
         else:
             print("Cant delete the desired task. Please, check the"
                   " parameters.")
@@ -362,7 +364,8 @@ class PendingTasks(object):
         except sqlite3.OperationalError as detail:
             print("Table name contains non-alphanumeric characters or"
                   " is non-existent.")
-            self.log.add(detail, time.strftime("%Y-%m-%d %H:%M:%S"))
+            self.log.add("_get_task", detail, time.strftime(
+                "%Y-%m-%d %H:%M:%S"))
 
     def _is_task_duplicate(self, task):
         """Checks if a given task is already in any of the tables.
@@ -416,3 +419,14 @@ class PendingTasks(object):
             if not cursor.fetchall():
                 incomplete_tasks.append(str(dependency))
         return incomplete_tasks
+
+    def _check_if_exists(self):
+        """Tests if the three tables exist."""
+        db_connection = sqlite3.connect("tasks.db")
+        cursor = db_connection.cursor()
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table';")
+        existing_tables = cursor.fetchall()
+        existing_tables = [table[0] for table in existing_tables]
+        return all([table in existing_tables for table in [
+            "NotStarted", "WorkingOn", "Completed"]])
