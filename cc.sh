@@ -2,17 +2,24 @@
 # cc: Commit changes.
 description=$1
 
-git add .
-git status
+number_of_unpushed_commits=$(git cherry | wc -l)
 
-echo "Commit description: '$description'"
-
-read -p "Is the commit description correct? [y/n]: " prompt
-
-if [[ ("$prompt" == "Y") || ("$prompt" == "y") ]];
+if [[ "$number_of_unpushed_commits" -gt 0  ]];
 then
-  git commit -m "$description"
-  git push origin master
+  echo "You should first stash or push previous commits."
 else
-  echo "Run the command again with the correct commit description."
+  git add .
+  git status
+
+  echo "Commit description: '$description'"
+
+  read -p "Is the commit description correct? [y/n]: " prompt
+
+  if [[ ("$prompt" == "Y") || ("$prompt" == "y") ]];
+  then
+    git commit -m "$description"
+    git push origin master
+  else
+    echo "Run the command again with the correct commit description."
+  fi
 fi
