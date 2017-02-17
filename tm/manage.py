@@ -19,10 +19,10 @@ from task import Task, labels
 class PendingTasks(object):
     """Manages the creation, modification and status of pending tasks."""
 
-    def __init__(self, current_directory):
+    def __init__(self, log_file_full_path="/opt/tm/logs/", project_name=None):
         """Tasks manager constructor"""
+        self.log = Logger(log_file_full_path, project_name)
         self.create_table("NotStarted", "WorkingOn", "Completed")
-        self.log = Logger(current_directory)
         # Use this queue to save the most recent new, modified, on process or
         # completed tasks. These tasks should be saved in tuples along with
         # their corresponding table. The length of this queue should not be
@@ -61,8 +61,16 @@ class PendingTasks(object):
                 )
                 db_connection.commit()
                 db_connection.close()
+                self.log.add_entry("Table creation: OK.",
+                                   "'{}' table successfully"
+                                   " created.".format(table_name),
+                                   time.strftime("%Y-%m-%d %H:%M:%S"))
             else:
                 print("{} is not alphanumeric.".format(table_name))
+                self.log.add_entry("Table creation: ERROR.",
+                                   "{} is not"
+                                   " alphanumeric.".format(table_name),
+                                   time.strftime("%Y-%m-%d %H:%M:%S"))
 
     def drop_table(self, *tables):
         """Deletes specified tables."""
@@ -75,8 +83,16 @@ class PendingTasks(object):
                 )
                 db_connection.commit()
                 db_connection.close()
+                self.log.add_entry("Table deletition: OK.",
+                                   "'{}' table successfully"
+                                   " deleted.".format(table_name),
+                                   time.strftime("%Y-%m-%d %H:%M:%S"))
             else:
                 print("{} is not alphanumeric.".format(table_name))
+                self.log.add_entry("Table deletition: ERROR.",
+                                   "{} is not"
+                                   " alphanumeric.".format(table_name),
+                                   time.strftime("%Y-%m-%d %H:%M:%S"))
 
     def add_task_into(self, table, task, moving_task=False):
         """Adds a given task to a given table."""
@@ -125,9 +141,17 @@ class PendingTasks(object):
         )
         if status:
             self.recent_tasks.push(task)
+            self.log.add_entry("Task creation: OK.",
+                               "Task with id {} successfully"
+                               " created.".format(task.info["identifier"]),
+                               time.strftime("%Y-%m-%d %H:%M:%S"))
         else:
             print("There were problems when adding the created task"
                   " to the 'NotStarted' table.")
+            self.log.add_entry("Task creation: ERROR.",
+                               "Task with id {} not added to 'NotStarted'"
+                               " table.".format(task.info["identifier"]),
+                               time.strftime("%Y-%m-%d %H:%M:%S"))
 
     def start_task(self, identifier):
         """Sets a task as started, after checking dependencies.
@@ -155,13 +179,30 @@ class PendingTasks(object):
                     if started_task in self.recent_tasks:
                         self.recent_tasks.update(started_task, "WorkingOn")
                         print("Task updated in cache.")
+                        self.log.add_entry("Updated in Cache after start: OK.",
+                                           "Task with id {} successfully"
+                                           " updated in cache.".format(
+                                               started_task.info["identifier"]
+                                           ),
+                                           time.strftime("%Y-%m-%d %H:%M:%S"))
                     else:
                         self.recent_tasks.push(started_task)
                         print("Task added to cache.")
+                        self.log.add_entry("Add to Cache after start: OK.",
+                                           "Task with id {} successfully"
+                                           " added to cache.".format(
+                                               started_task.info["identifier"]
+                                           ),
+                                           time.strftime("%Y-%m-%d %H:%M:%S"))
                     return started_task
                 else:
                     print("There were problems when adding the started task"
                           " to the 'WorkingOn' table.")
+                    self.log.add_entry("Label task as started: ERROR.",
+                                       "Task with id {} could not be added to"
+                                       " the 'WorkingOn' table".format(
+                                           started_task.info["identifier"]),
+                                       time.strftime("%Y-%m-%d %H:%M:%S"))
             else:
                 incomplete_tasks = self._meets_dependencies(depends_from)
                 msg = ("The current task ('{}') depends from ".format(
@@ -221,9 +262,19 @@ class PendingTasks(object):
             if modified_task in self.recent_tasks:
                 self.recent_tasks.update(modified_task)
                 print("Information updated.")
+                self.log.add_entry("Updated in Cache: OK.",
+                                   "Task with id {} successfully"
+                                   " updated in cache.".format(
+                                       modified_task.info["identifier"]),
+                                   time.strftime("%Y-%m-%d %H:%M:%S"))
             else:
                 self.recent_tasks.push(modified_task)
                 print("Task added to cache.")
+                self.log.add_entry("Add to Cache: OK.",
+                                   "Task with id {} successfully"
+                                   " added to cache.".format(
+                                       modified_task.info["identifier"]),
+                                   time.strftime("%Y-%m-%d %H:%M:%S"))
         else:
             print("The given identifier is not present in any table.")
 
@@ -246,14 +297,22 @@ class PendingTasks(object):
                 )
                 db_connection.commit()
                 db_connection.close()
+                self.log.add_entry("Task deleted: OK.",
+                                   "Task with id {} successfully"
+                                   " deleted from '{}'.".format(
+                                       identifier, table
+                                   ),
+                                   time.strftime("%Y-%m-%d %H:%M:%S"))
                 return self.recent_tasks.pop((identifier, table))
             except sqlite3.OperationalError as detail:
                 print("Table name contains non-alphanumeric characters.")
-                self.log.add("delete", detail, time.strftime(
-                    "%Y-%m-%d %H:%M:%S"))
+                self.log.add_entry("Task deleted: ERROR",
+                                   "Table name contains non-alphanumeric"
+                                   " characters. " + detail,
+                                   time.strftime("%Y-%m-%d %H:%M:%S"))
         else:
-            print("Cant delete the desired task. Please, check the"
-                  " parameters.")
+            print("Cant delete the desired task. Please, verify if the given"
+                  " 'identifier' is correctly spelled.")
 
     def completed_task(self, identifier):
         """Labels a task as completed.
@@ -274,13 +333,28 @@ class PendingTasks(object):
                 if completed_task in self.recent_tasks:
                     self.recent_tasks.update(completed_task, "Completed")
                     print("Information updated.")
+                    self.log.add_entry("Updated in Cache after complete: OK.",
+                                       "Task with id {} successfully"
+                                       " updated in cache.".format(
+                                           completed_task.info["identifier"]),
+                                       time.strftime("%Y-%m-%d %H:%M:%S"))
                 else:
                     self.recent_tasks.push(completed_task)
                     print("Task added to cache.")
+                    self.log.add_entry("Add to Cache after complete: OK.",
+                                       "Task with id {} successfully"
+                                       " added to cache.".format(
+                                           completed_task.info["identifier"]),
+                                       time.strftime("%Y-%m-%d %H:%M:%S"))
                 return completed_task
             else:
                 print("There were problems when adding the completed task"
                       " to the 'Completed' table.")
+                self.log.add_entry("Label task as compelted: ERROR.",
+                                   "Task with id {} could not be added to the"
+                                   " 'Completed' table".format(
+                                       completed_task.info["identifier"]),
+                                   time.strftime("%Y-%m-%d %H:%M:%S"))
         else:
             print("There is no task with that identifier waiting to be"
                   " completed.")
@@ -364,7 +438,7 @@ class PendingTasks(object):
         except sqlite3.OperationalError as detail:
             print("Table name contains non-alphanumeric characters or"
                   " is non-existent.")
-            self.log.add("_get_task", detail, time.strftime(
+            self.log.add_entry("_get_task", detail, time.strftime(
                 "%Y-%m-%d %H:%M:%S"))
 
     def _is_task_duplicate(self, task):

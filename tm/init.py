@@ -23,7 +23,7 @@ with open(config_file_path, "w") as f:
     f.write("Configuration file. Created at {}\n".format(
         time.strftime("%Y-%m-%d %H:%M:%S")))
     if tables_creation_successful:
-        f.write("The three tables ('NotStarted', 'WorkingOn', '#Completed')"
+        f.write("The three tables ('NotStarted', 'WorkingOn', 'Completed')"
                 " were successfully created.\n")
     else:
         f.write("There were issues while trying to create the needed"
