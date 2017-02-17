@@ -43,3 +43,41 @@ class Logger(object):
                     timestamp, operation, detail
                 )
             )
+
+    def tail(self, number_of_lines, print_lines=True):
+        if number_of_lines <= 0:
+            raise ValueError("Invalid number of lines selected: {}".format(
+                number_of_lines))
+        with open(self.log_path, "r") as self.log:
+            BUFFER_SIZE = 1024
+            # Check if file is encoded.
+            is_encoded = getattr(self.log, "encoded", False)
+            CR = "\n" if is_encoded else b"\n"
+            data = "" if is_encoded else b""
+            # Configure file pointer.
+            self.log.seek(0, os.SEEK_END)
+            file_size = self.log.tell()
+            block = -1
+            exit_loop = False
+
+            while not exit_loop:
+                step = block * BUFFER_SIZE
+                if abs(step) >= file_size:
+                    self.log.seek(0)
+                    new_data = self.log.read(BUFFER_SIZE - (
+                        abs(step) - file_size))
+                    exit_loop = True
+                else:
+                    self.log.seek(step, os.SEEK_END)
+                    new_data = self.log.read(BUFFER_SIZE)
+                data = new_data + data
+                if data.count(CR) >= number_of_lines:
+                    break
+                else:
+                    block -= 1
+
+            lines = data.splitlines()[-number_of_lines:]
+            if print_lines:
+                for line in lines:
+                    print line
+            return lines
