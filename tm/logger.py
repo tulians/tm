@@ -37,6 +37,7 @@ class Logger(object):
             ))
 
     def add_entry(self, operation, detail, timestamp):
+        """Appends a new line to the log file."""
         with open(self.log_path, "a") as self.log:
             self.log.write(
                 "{0} | Operation: {1} | Detail: {2}\n".format(
@@ -44,7 +45,8 @@ class Logger(object):
                 )
             )
 
-    def tail(self, number_of_lines, print_lines=True):
+    def tail(self, number_of_lines=20, print_lines=True):
+        """Presents in screen the n-th last log lines."""
         if number_of_lines <= 0:
             raise ValueError("Invalid number of lines selected: {}".format(
                 number_of_lines))

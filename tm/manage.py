@@ -438,8 +438,10 @@ class PendingTasks(object):
         except sqlite3.OperationalError as detail:
             print("Table name contains non-alphanumeric characters or"
                   " is non-existent.")
-            self.log.add_entry("_get_task", detail, time.strftime(
-                "%Y-%m-%d %H:%M:%S"))
+            self.log.add_entry("Get task: ERROR",
+                               "Table name contains non-alphanumeric"
+                               " characters or is non-existent. " + detail,
+                               time.strftime("%Y-%m-%d %H:%M:%S"))
 
     def _is_task_duplicate(self, task):
         """Checks if a given task is already in any of the tables.
