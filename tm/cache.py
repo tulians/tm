@@ -47,7 +47,7 @@ class TaskCache(Queue):
     def push(self, data):
         if data in self:
             print("Won't add repeated item to cache. If you want to update"
-                  " any of its aspect please use update().")
+                  " any of its aspects please use update().")
         else:
             super(TaskCache, self).push(data)
 
@@ -66,6 +66,7 @@ class TaskCache(Queue):
                 del self.queue[index]
                 return task_to_pop
         print("The given task is not currently present in the cache.")
+        return None
 
     def update(self, data, new_state=None):
         """Updates information or belonging table of a record in the cache."""

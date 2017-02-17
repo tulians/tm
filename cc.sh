@@ -6,7 +6,7 @@ number_of_unpushed_commits=$(git cherry | wc -l)
 
 if [[ "$number_of_unpushed_commits" -gt 0  ]];
 then
-  echo "You should first stash or push previous commits."
+  echo "You should first stash changes or push previous commits."
 else
   git add .
   git status
