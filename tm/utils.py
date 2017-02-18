@@ -10,7 +10,8 @@ from string import ascii_letters, punctuation
 
 # Generate a set of characters used for string sanitization.
 punctuation_minus = set(punctuation) - set(('.', '_', '-'))
-substrings = set(("rm", "&&", "-f", "null", "/dev/null", "2>&1", "-rf"))
+substrings = set(("rm", "&&", "-f", "null", "/dev/null", "2>&1", "-rf",
+                  "rf"))
 illegal = [re.escape(item) for item in (punctuation_minus | substrings)]
 illegal_as_str = "|".join(illegal)
 
@@ -43,14 +44,19 @@ def replace_last_comma(s):
     return " and".join(list_of_characters)
 
 
-# TODO: This solution is O(n.m) where n = len(illegal) and m = len(parts).
-# Look for a more efficient approach.
 def sanitize_string(s):
-    operation = (re.split(illegal_as_str, s))[0]
-    operation = operation.strip()
+    """Cleans a string from illegal characters."""
+    # Get all legal strings.
+    operations = re.split(illegal_as_str, s)
+    # Remove trailing spaces
+    no_trailings = [x.strip() for x in operations]
+    # Remove empty strings.
+    list_of_operations = filter(None, no_trailings)
+    # Generate a safe string to return.
+    operations_str = " ".join(list_of_operations)
     try:
-        operation.decode("utf-8")
-        return operation
+        operations_str.decode("utf-8")
+        return operations_str
     except UnicodeDecodeError as detail:
         print("UnicodeDecodeError: " + str(detail))
         return False
