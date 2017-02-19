@@ -4,7 +4,7 @@
 # ===================================
 
 # Built-in modules.
-from subprocess import call
+from subprocess import call, check_output
 # Project specific modules.
 from utils import sanitize_string
 
@@ -56,12 +56,20 @@ def push(flags="", server="origin", branch="master"):
               " commands.")
 
 
+def changed_files():
+    # Get all changed files.
+    files = check_output("git status -s | cut -c4-", shell=True)
+    # Remove trailing whitespaces.
+    files = files.strip()
+    return list(files.split("\n"))
+
+
 def _execute(git_cmd_string):
     git_cmd_string = git_cmd_string.strip()
     call(git_cmd_string, shell=True)
 
 
-def make(files, commit_message):
+def make(commit_message, files=changed_files()):
     add_files(files)
     status()
     commit(commit_message)
