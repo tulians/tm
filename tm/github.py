@@ -32,21 +32,24 @@ def status(flags=""):
         print("The given parameters contain not safe characters or commands.")
 
 
-def commit(message):
+def commit(message, flags="-m"):
     """Performs 'git commit -m [-message]' operation."""
-    if message == sanitize_string(message):
-        git_cmd_string = "git commit -m '{}'".format(message)
+    flags_are_safe = sanitize_string(flags)
+    if (message == sanitize_string(message)) and flags_are_safe:
+        git_cmd_string = "git commit {0} '{1}'".format(flags_are_safe, message)
         _execute(git_cmd_string)
     else:
         print("The given commit message contains not safe characters or"
               " commands.")
 
 
-def push(server, branch):
-    """Performs 'git push [-server] [-branch]' operation."""
-    squashed = server + branch
+def push(flags="", server="origin", branch="master"):
+    """Performs 'git push [-flags] [-server] [-branch]' operation."""
+    squashed = flags + server + branch
     if sanitize_string(squashed):
-        git_cmd_string = "git push {} {}".format(server, branch)
+        git_cmd_string = "git push {0} {1} {2}".format(flags, server, branch)
+        if flags == "":
+            git_cmd_string = " ".join(git_cmd_string.split())
         _execute(git_cmd_string)
     else:
         print("The given server and/or branch contain not safe characters or"
@@ -56,3 +59,10 @@ def push(server, branch):
 def _execute(git_cmd_string):
     git_cmd_string = git_cmd_string.strip()
     call(git_cmd_string, shell=True)
+
+
+def make(files, commit_message):
+    add_files(files)
+    status()
+    commit(commit_message)
+    push()
