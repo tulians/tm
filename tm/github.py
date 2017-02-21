@@ -5,9 +5,9 @@
 
 # Built-in modules.
 try:
-    from subprocess import run, check_output
+    from subprocess import run, check_output, Popen, PIPE
 except ImportError:
-    from subprocess import call, check_output
+    from subprocess import call, check_output, Popen, PIPE
 
 
 def add_files(files):
@@ -65,11 +65,10 @@ def merge(from_branch, to_branch):
 # --> Utilities.
 def changed_files():
     """Returns a list with all the changed files after the last commit"""
-    # Get all changed files.
-    files = check_output("git status -s | cut -c4-", shell=True)
-    # Remove trailing whitespaces.
-    files = files.strip()
-    return list(files.split("\n"))
+    # Get all changed files, avoiding the use of shell=True.
+    status = Popen(("git", "status", "-s"), stdout=PIPE)
+    files = check_output(('cut', '-c4-'), stdin=status.stdout)
+    return filter(None, files.split("\n"))
 
 
 def _execute(git_cmd_list):
