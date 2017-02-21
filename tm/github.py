@@ -32,8 +32,10 @@ def status(flags=""):
         print("The given parameters contain not safe characters or commands.")
 
 
-def commit(message, flags="-m"):
+def commit(message="", flags="-m"):
     """Performs 'git commit -m [-message]' operation."""
+    if message == "" and flags == "":
+        raise ValueError("No valid message/flag values received.")
     flags_are_safe = sanitize_string(flags)
     if (message == sanitize_string(message)) and flags_are_safe:
         git_cmd_string = "git commit {0} '{1}'".format(flags_are_safe, message)
@@ -46,7 +48,7 @@ def commit(message, flags="-m"):
 def push(flags="", server="origin", branch="master"):
     """Performs 'git push [-flags] [-server] [-branch]' operation."""
     squashed = flags + server + branch
-    if sanitize_string(squashed):
+    if squashed == sanitize_string(squashed):
         git_cmd_string = "git push {0} {1} {2}".format(flags, server, branch)
         if flags == "":
             git_cmd_string = " ".join(git_cmd_string.split())
@@ -56,6 +58,36 @@ def push(flags="", server="origin", branch="master"):
               " commands.")
 
 
+def branch(name):
+    """Performs 'git checkout -n [-name]' operation."""
+    if (not name) or (name == ""):
+        raise ValueError("No valid branch name received.")
+    if name == sanitize_string(name):
+        git_cmd_string = "git checkout -b {}".format(name)
+        _execute(git_cmd_string)
+    else:
+        print("The given branch name contains not safe characters or"
+              " commands.")
+
+
+def merge(from_branch, to_branch):
+    """Performs the merging of two branches."""
+    if not (from_branch and to_branch):
+        raise ValueError("No valid branch names received.")
+    squashed = from_branch + to_branch
+    if squashed == sanitize_string(squashed):
+        git_checkout_string = "git checkout {}".format(to_branch)
+        git_merge_string = "git merge {}".format(from_branch)
+        git_delete_branch_string = "git branch -d {}".format(from_branch)
+        git_cmd_string = (git_checkout_string + "; " + git_merge_string
+                          + "; " + git_delete_branch_string)
+        _execute(git_cmd_string)
+    else:
+        print("The given branch names contain not safe characters or"
+              " commands.")
+
+
+# --> Utilities.
 def changed_files():
     # Get all changed files.
     files = check_output("git status -s | cut -c4-", shell=True)
