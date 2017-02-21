@@ -32,7 +32,7 @@ def commit(message):
     if message == "" or not message:
         raise ValueError("No valid message/flag values received.")
     git_cmd_list = "git commit -m".split(" ")
-    git_cmd_list.append('"' + message + '"')
+    git_cmd_list.append(message)
     _execute(git_cmd_list)
 
 
