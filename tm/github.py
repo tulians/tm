@@ -8,8 +8,6 @@ try:
     from subprocess import run, check_output
 except:
     from subprocess import call, check_output
-# Project specific modules.
-from utils import sanitize_string
 
 
 def add_files(files):
