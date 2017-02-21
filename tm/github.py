@@ -59,7 +59,7 @@ def push(flags="", server="origin", branch="master"):
 
 
 def branch(name):
-    """Performs 'git checkout -n [-name]' operation."""
+    """Performs 'git checkout -b [-name]' operation."""
     if (not name) or (name == ""):
         raise ValueError("No valid branch name received.")
     if name == sanitize_string(name):
