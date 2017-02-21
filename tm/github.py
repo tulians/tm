@@ -6,7 +6,7 @@
 # Built-in modules.
 try:
     from subprocess import run, check_output
-except:
+except ImportError:
     from subprocess import call, check_output
 
 
@@ -64,6 +64,7 @@ def merge(from_branch, to_branch):
 
 # --> Utilities.
 def changed_files():
+    """Returns a list with all the changed files after the last commit"""
     # Get all changed files.
     files = check_output("git status -s | cut -c4-", shell=True)
     # Remove trailing whitespaces.
@@ -72,6 +73,7 @@ def changed_files():
 
 
 def _execute(git_cmd_list):
+    """Runs the git commands."""
     # Python 2.X and 3.X compatibility.
     try:
         run(git_cmd_list)
@@ -80,6 +82,7 @@ def _execute(git_cmd_list):
 
 
 def make(commit_message, server, branch, files=changed_files(), flags=""):
+    """Pushes commits to the remote repository."""
     add_files(files)
     status(flags)
     commit(commit_message)
