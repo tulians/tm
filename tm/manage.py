@@ -176,6 +176,7 @@ class PendingTasks(object):
                 status = self.add_task_into("WorkingOn", started_task, True)
                 self.delete_task(identifier)
                 print("Successfully labeled task as started.")
+                gh.branch(started_task.info["identifier"])
                 if status:
                     if started_task in self.recent_tasks:
                         self.recent_tasks.update(started_task, "WorkingOn")
@@ -331,11 +332,11 @@ class PendingTasks(object):
             status = self.add_task_into("Completed", completed_task, True)
             self.delete_task(identifier)
             gh.make(
-                completed_task.info["identifier"] +
                 completed_task.info["description"],
                 "origin",
-                "master"
+                completed_task.info["identifier"]
             )
+            gh.merge(completed_task.info["identifier"], "master")
             if status:
                 if completed_task in self.recent_tasks:
                     self.recent_tasks.update(completed_task, "Completed")
