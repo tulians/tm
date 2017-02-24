@@ -11,6 +11,7 @@ import time
 import sqlite3
 # Project specific modules.
 import utils as u
+import github as gh
 from logger import Logger
 from cache import TaskCache
 from task import Task, labels
@@ -329,6 +330,12 @@ class PendingTasks(object):
             completed_task = Task(completed_task_info, "Completed")
             status = self.add_task_into("Completed", completed_task, True)
             self.delete_task(identifier)
+            gh.make(
+                completed_task.info["identifier"] +
+                completed_task.info["description"],
+                "origin",
+                "master"
+            )
             if status:
                 if completed_task in self.recent_tasks:
                     self.recent_tasks.update(completed_task, "Completed")

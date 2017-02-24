@@ -63,7 +63,7 @@ def merge(from_branch, to_branch):
 
 
 # --> Utilities.
-def changed_files():
+def _changed_files():
     """Returns a list with all the changed files after the last commit"""
     # Get all changed files, avoiding the use of shell=True.
     status = Popen(("git", "status", "-s"), stdout=PIPE)
@@ -80,7 +80,7 @@ def _execute(git_cmd_list):
         call(git_cmd_list)
 
 
-def make(commit_message, server, branch, files=changed_files(), flags=""):
+def make(commit_message, server, branch, files=_changed_files(), flags=""):
     """Pushes commits to the remote repository."""
     add_files(files)
     status(flags)
