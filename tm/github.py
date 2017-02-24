@@ -4,6 +4,7 @@
 # ===================================
 
 # Built-in modules.
+import os
 try:
     from subprocess import run, check_output, Popen, PIPE
 except ImportError:
@@ -54,12 +55,17 @@ def merge(from_branch, to_branch):
     """Performs the merging of two branches."""
     if not (from_branch and to_branch):
         raise ValueError("No valid branch names received.")
+    os.chdir("..")
     git_checkout_string = "git checkout {}".format(to_branch)
     _execute(git_checkout_string)
     git_merge_string = "git merge {}".format(from_branch)
     _execute(git_merge_string)
-    git_delete_branch_string = "git branch -d {}".format(from_branch)
-    _execute(git_delete_branch_string)
+    git_delete_branch_local = "git branch -d {}".format(from_branch)
+    _execute(git_delete_branch_local)
+    git_delete_branch_remote = ("git push origin --delete {}".
+                                format(from_branch))
+    _execute(git_delete_branch_remote)
+    os.chdir("./tm")
 
 
 # --> Utilities.
