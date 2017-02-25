@@ -65,6 +65,7 @@ def merge(from_branch, to_branch):
     git_delete_branch_remote = ("git push origin --delete {}".
                                 format(from_branch))
     _execute(git_delete_branch_remote.strip().split(" "))
+    push("origin", to_branch)
     os.chdir("./tm")
 
 
