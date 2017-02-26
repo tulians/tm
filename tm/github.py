@@ -59,10 +59,6 @@ def merge(from_branch, to_branch):
     """Performs the merging of two branches."""
     if not (from_branch and to_branch):
         raise ValueError("No valid branch names received.")
-#    git_checkout_feat = "git checkout {}".format(from_branch)
-#    _execute(git_checkout_feat.strip().split(" "))
-#    git_checkout_string = "git fetch && git checkout {}".format(to_branch)
-#    _execute(git_checkout_string.strip().split(" "))
     git_checkout_string = "git checkout {}".format(to_branch)
     _execute(git_checkout_string.strip().split(" "))
     git_merge_string = "git merge {}".format(from_branch)

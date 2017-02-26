@@ -24,7 +24,7 @@ parser.add_argument("-v", "--verbose", help="increase output verbosity",
                     action="store_true")
 args = parser.parse_args()
 
-# TODO: update dump and report actions pending.
+# TODO: update action pending.
 # Select action depending on argument.
 if args.action == "init":
     if pt.log:
@@ -36,6 +36,7 @@ if args.action == "init":
                          "The three tables ('NotStarted', 'WorkingOn',"
                          " 'Completed') were successfully created.\n",
                          time.strftime("%Y-%m-%d %H:%M:%S"))
+    print("Task manager initialized in project.")
 elif args.action == "create":
     print("New task creation.\n")
     if sys.version_info[0] == 2:
@@ -49,6 +50,7 @@ elif args.action == "create":
         depends_from = input("Depends from: ")
         priority = int(input("Priority: "))
     pt.create_task(identifier, description, depends_from, priority)
+    print("Task successfully created.")
 elif args.action == "start":
     print("Label a task as started.\n")
     if sys.version_info[0] == 2:
@@ -56,6 +58,7 @@ elif args.action == "start":
     else:
         identifier = input("Identifier: ")
     pt.start_task(identifier)
+    print("Task successfully labels as started.")
 elif args.action == "delete":
     print("Delete a task from the pending tasks list.")
     if sys.version_info[0] == 2:
@@ -70,5 +73,17 @@ elif args.action == "completed":
     else:
         identifier = input("Identifier: ")
     pt.completed_task(identifier)
+    print("Task successfully labeled as completed.")
+elif args.action == "dump":
+    print("Generates a dump file with the task database..")
+    pt.dump_db()
+    print("Database dump successfully generated.")
+elif args.action == "report":
+    print("Generates a report of a given task.\n")
+    if sys.version_info[0] == 2:
+        identifier = raw_input("Identifier: ")
+    else:
+        identifier = input("Identifier: ")
+    pt.generate_report(identifier)
 else:
     print("No valid option selected.")
