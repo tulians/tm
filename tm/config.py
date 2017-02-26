@@ -54,28 +54,6 @@ def copy_menu():
         return False
 
 
-def config_file():
-    """Defines a hidden configuration file which will feed the executable
-    script with the necessary information."""
-    paths = {
-        "source_code_path": to_directory,
-        "executable_path": executable_directory + "tm"
-    }
-    config_file_path = home_dir + "/.config.tm"
-    try:
-        with open(config_file_path, "w") as f:
-            f.write(
-                dumps(paths,
-                      sort_keys=True,
-                      indent=4,
-                      separators=(",", ": "))
-            )
-        return True
-    except (OSError, IOError) as detail:
-        print(detail)
-        return False
-
-
 def path_file():
     """Creates a nexus between the executable and this configuration file, for
     importing a whole directory."""
