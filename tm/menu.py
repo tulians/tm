@@ -29,12 +29,12 @@ args = parser.parse_args()
 if args.action == "init":
     if pt.log:
         pt.log.add_entry("Log file creation",
-                         "The logging file was successfully created.\n",
+                         "The logging file was successfully created.",
                          time.strftime("%Y-%m-%d %H:%M:%S"))
     if pt._check_if_exists():
         pt.log.add_entry("Create basic tables",
                          "The three tables ('NotStarted', 'WorkingOn',"
-                         " 'Completed') were successfully created.\n",
+                         " 'Completed') were successfully created.",
                          time.strftime("%Y-%m-%d %H:%M:%S"))
     print("Task manager initialized in project.")
 elif args.action == "create":
