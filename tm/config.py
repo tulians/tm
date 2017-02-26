@@ -40,6 +40,8 @@ def copy_menu():
     menu_source_path = source_directory + "/menu.py"
     menu_bin_path = executable_directory + "tm"
     try:
+        if not os.path.exists(executable_directory):
+            os.makedirs(executable_directory)
         # Create a new file 'tm' in the ~/bin directory.
         copyfile(menu_source_path, menu_bin_path)
         # Make the file executable.

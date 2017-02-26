@@ -18,6 +18,7 @@ def add_files(files):
     files_to_add = " ".join(files)
     git_cmd_string = "git add {}".format(files_to_add)
     _execute(git_cmd_string.strip().split(" "))
+    print("Files successfully added.")
 
 
 def status(flags=""):
@@ -33,6 +34,7 @@ def commit(message):
     git_cmd_list = "git commit -m".split(" ")
     git_cmd_list.append(message)
     _execute(git_cmd_list)
+    print("Files successfully committed.")
 
 
 def push(server, branch):
@@ -41,6 +43,7 @@ def push(server, branch):
         raise ValueError("Not valid server and/or branch values given.")
     git_cmd_string = "git push {0} {1}".format(server, branch)
     _execute(git_cmd_string.strip().split(" "))
+    print("Files successfully pushed.")
 
 
 def branch(name):
@@ -49,6 +52,7 @@ def branch(name):
         raise ValueError("No valid branch name received.")
     git_cmd_string = "git checkout -b {}".format(name)
     _execute(git_cmd_string.strip().split(" "))
+    print("Branch successfully created.")
 
 
 def merge(from_branch, to_branch):
@@ -67,6 +71,7 @@ def merge(from_branch, to_branch):
     _execute(git_delete_branch_remote.strip().split(" "))
     push("origin", to_branch)
     os.chdir("./tm")
+    print("Merging successfully completed.")
 
 
 # --> Utilities.
