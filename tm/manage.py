@@ -23,7 +23,8 @@ class PendingTasks(object):
     def __init__(self, log_file_full_path="/opt/tm/logs/", project_name=None):
         """Tasks manager constructor"""
         self.log = Logger(log_file_full_path, project_name)
-        self.create_table("NotStarted", "WorkingOn", "Completed")
+        if not self._check_if_exists():
+            self.create_table("NotStarted", "WorkingOn", "Completed")
         # Use this queue to save the most recent new, modified, on process or
         # completed tasks. These tasks should be saved in tuples along with
         # their corresponding table. The length of this queue should not be

@@ -31,10 +31,11 @@ class Logger(object):
             log_name = str(project_name) + "_" + log_name
 
         self.log_path = creation_path + log_name
-        with open(self.log_path, "w+") as self.log:
-            self.log.write("Task Manager Log. Created at {}\n".format(
-                time.strftime("%Y-%m-%d %H:%M:%S")
-            ))
+        if not os.path.isfile(self.log_path):
+            with open(self.log_path, "w+") as self.log:
+                self.log.write("Task Manager Log. Created at {}\n".format(
+                    time.strftime("%Y-%m-%d %H:%M:%S")
+                ))
 
     def add_entry(self, operation, detail, timestamp):
         """Appends a new line to the log file."""
