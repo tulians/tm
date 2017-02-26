@@ -71,7 +71,7 @@ def merge(from_branch, to_branch):
 
 # --> Utilities.
 def _changed_files():
-    """Returns a list with all the changed files after the last commit"""
+    """Returns a list with all the changed files after the last commit."""
     # Get all changed files, avoiding the use of shell=True.
     status = Popen(("git", "status", "-s"), stdout=PIPE)
     files = check_output(('cut', '-c4-'), stdin=status.stdout)

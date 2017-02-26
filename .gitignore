@@ -9,6 +9,7 @@ __pycache__/
 *.swp
 *.db
 *.sql
+.logs
 
 # C extensions
 *.so
