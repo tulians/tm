@@ -27,9 +27,6 @@ Task successfully created.
 To start working on a created task you must use the unique *identifier* defined in the task creation:
 ```sh
 $ tm start <unique_id>
-Label a task as started.
-
-Identifier: <unique_id>
 ...
 Task successfully labels as started.
 ```
@@ -38,10 +35,7 @@ After this point a new branch named after the *identifier* value is created. Thi
 #### Completed Task
 Once you completed the feature the task represents, you are ready to label it as *completed*. By doing this the branch in which this task was being developed gets merged with `master`/`develop`.
 ```sh
-$ tm completed
-Label a task as completed.
-
-Identifier: <unique_id>
+$ tm completed <unique_id>
 ...
 Task successfully labeled as completed.
 ```

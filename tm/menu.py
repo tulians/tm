@@ -20,8 +20,7 @@ parser = argparse.ArgumentParser(prog="tm", description="Task manager CLI")
 parser.add_argument("action", help="action to perform",
                     choices=["init", "create", "start", "update", "delete",
                              "completed", "dump", "report"])
-parser.add_argument("-v", "--verbose", help="increase output verbosity",
-                    action="store_true")
+parser.add_argument("identifier", nargs="?", help="Task unique identifier")
 args = parser.parse_args()
 
 # TODO: update action pending.
@@ -52,26 +51,15 @@ elif args.action == "create":
     pt.create_task(identifier, description, depends_from, priority)
     print("Task successfully created.")
 elif args.action == "start":
-    print("Label a task as started.\n")
-    if sys.version_info[0] == 2:
-        identifier = raw_input("Identifier: ")
-    else:
-        identifier = input("Identifier: ")
+    identifier = args.identifier
     pt.start_task(identifier)
-    print("Task successfully labels as started.")
+    print("Task successfully labeled as started.")
+# TODO: Review what happens with the branch in this case.
 elif args.action == "delete":
-    print("Delete a task from the pending tasks list.")
-    if sys.version_info[0] == 2:
-        identifier = raw_input("Identifier: ")
-    else:
-        identifier = input("Identifier: ")
+    identifier = args.identifier
     pt.delete_task(identifier)
 elif args.action == "completed":
-    print("Label a task as completed.\n")
-    if sys.version_info[0] == 2:
-        identifier = raw_input("Identifier: ")
-    else:
-        identifier = input("Identifier: ")
+    identifier = args.identifier
     pt.completed_task(identifier)
     print("Task successfully labeled as completed.")
 elif args.action == "dump":
@@ -79,11 +67,7 @@ elif args.action == "dump":
     pt.dump_db()
     print("Database dump successfully generated.")
 elif args.action == "report":
-    print("Generates a report of a given task.\n")
-    if sys.version_info[0] == 2:
-        identifier = raw_input("Identifier: ")
-    else:
-        identifier = input("Identifier: ")
+    identifier = args.identifier
     pt.generate_report(identifier)
 else:
     print("No valid option selected.")
