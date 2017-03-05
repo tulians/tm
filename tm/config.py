@@ -6,19 +6,29 @@
 import os
 import sys
 import stat
+import argparse
 from shutil import copyfile
 from distutils.dir_util import copy_tree
 from distutils.errors import DistutilsFileError
 
-home_dir = os.path.expanduser("~")
+# Argument parsing.
+parser = argparse.ArgumentParser(prog="tm", description="Task manager"
+                                 " configuration")
+parser.add_argument("path", help="Source and executable path.")
+args = parser.parse_args()
+
 source_directory = os.path.dirname(os.path.realpath(__file__))
-if len(sys.argv) > 1:
-    to_directory = sys.argv[1]
-    executable_directory = to_directory
-#    executable_directory = sys.argv[2]
-else:
-    to_directory = "/opt/tm/"
-    executable_directory = home_dir + "/bin/"
+to_directory = executable_directory = args.path
+
+# home_dir = os.path.expanduser("~")
+# source_directory = os.path.dirname(os.path.realpath(__file__))
+# if len(sys.argv) > 1:
+#     to_directory = sys.argv[1]
+#     executable_directory = to_directory
+# #    executable_directory = sys.argv[2]
+# else:
+#     to_directory = "/opt/tm/"
+#     executable_directory = home_dir + "/bin/"
 
 
 def copy_project_files():

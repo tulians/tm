@@ -1,2 +1,2 @@
-__all__ = ["cache", "config", "github", "logger", "manage", "menu", "task",
+__all__ = ["cache", "config", "git", "logger", "manage", "menu", "task",
            "utils"]

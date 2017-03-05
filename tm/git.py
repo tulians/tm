@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Github abstraction module.
+# Git abstraction module.
 # ===================================
 
 # Built-in modules.

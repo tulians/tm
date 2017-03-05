@@ -8,8 +8,8 @@ import os
 import time
 import sqlite3
 # Project specific modules.
+import git
 import utils as u
-import github as gh
 from logger import Logger
 from cache import TaskCache
 from task import Task, labels
@@ -177,7 +177,7 @@ class PendingTasks(object):
                 status = self.add_task_into("WorkingOn", started_task, True)
                 self.delete_task(identifier)
                 print("Successfully labeled task as started.")
-                gh.branch(started_task.info["identifier"])
+                git.branch(started_task.info["identifier"])
                 self.log.add_entry("Created temp branch: OK", "Successfully"
                                    " created temp branch.",
                                    time.strftime("%Y-%m-%d %H:%M:%S"))
@@ -335,7 +335,7 @@ class PendingTasks(object):
             completed_task = Task(completed_task_info, "Completed")
             status = self.add_task_into("Completed", completed_task, True)
             self.delete_task(identifier)
-            gh.make(
+            git.make(
                 completed_task.info["description"],
                 "origin",
                 completed_task.info["identifier"]
@@ -343,7 +343,7 @@ class PendingTasks(object):
             self.log.add_entry("Pushed to branch: OK", "Successfully pushed"
                                " changes to branch.",
                                time.strftime("%Y-%m-%d %H:%M:%S"))
-            gh.merge(completed_task.info["identifier"], "master")
+            git.merge(completed_task.info["identifier"], "master")
             self.log.add_entry("Merged with master: OK", "Successfully merged"
                                " feature branch with master.",
                                time.strftime("%Y-%m-%d %H:%M:%S"))
