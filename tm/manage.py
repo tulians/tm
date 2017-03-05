@@ -147,6 +147,7 @@ class PendingTasks(object):
                                "Task with id {} successfully"
                                " created.".format(task.info["identifier"]),
                                time.strftime("%Y-%m-%d %H:%M:%S"))
+            return task
         else:
             print("There were problems when adding the created task"
                   " to the 'NotStarted' table.")
@@ -154,6 +155,7 @@ class PendingTasks(object):
                                "Task with id {} not added to 'NotStarted'"
                                " table.".format(task.info["identifier"]),
                                time.strftime("%Y-%m-%d %H:%M:%S"))
+            return None
 
     def start_task(self, identifier):
         """Sets a task as started, after checking dependencies.
@@ -417,7 +419,7 @@ class PendingTasks(object):
                     "Task #{0}:\n"
                     "- Description: {1}\n"
                     "- Priority: {2}\n"
-                    "- Dependencies {3}\n"
+                    "- Dependencies: {3}\n"
                     "- Created at: {4}\n"
                     "- Started at: {5}\n"
                     "- Completed at: {6}\n"

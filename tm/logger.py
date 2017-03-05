@@ -11,8 +11,7 @@ import time
 class Logger(object):
     def __init__(self, creation_path, project_name):
         """Logger's constructor. The log file is placed by default in
-        /opt/tm/logs/ directory.
-        """
+        /opt/tm/logs/ directory."""
         if creation_path[-1] != "/":
             creation_path += "/"
 
@@ -54,7 +53,7 @@ class Logger(object):
         with open(self.log_path, "r") as self.log:
             BUFFER_SIZE = 1024
             # Check if file is encoded.
-            is_encoded = getattr(self.log, "encoded", False)
+            is_encoded = getattr(self.log, "encoding", False)
             CR = "\n" if is_encoded else b"\n"
             data = "" if is_encoded else b""
             # Configure file pointer.
@@ -82,5 +81,5 @@ class Logger(object):
             lines = data.splitlines()[-number_of_lines:]
             if print_lines:
                 for line in lines:
-                    print line
+                    print(line)
             return lines

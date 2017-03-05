@@ -5,26 +5,23 @@
 
 # Built-in modules.
 import os
-try:
-    from subprocess import run, check_output, Popen, PIPE
-except ImportError:
-    from subprocess import call, check_output, Popen, PIPE
+from subprocess import run, check_output, Popen, PIPE
 
 
 def add_files(files):
     """Performs 'git add [-files]' operation."""
     if not files:
         raise ValueError("No files received for adding.")
-    files_to_add = " ".join(files)
-    git_cmd_string = "git add {}".format(files_to_add)
-    _execute(git_cmd_string.strip().split(" "))
+    files_to_add = b" ".join(files)
+    git_cmd_string = "git add {}".format(files_to_add.decode("utf-8"))
+    run(git_cmd_string.strip().split(" "))
     print("Files successfully added.")
 
 
 def status(flags=""):
     """Performs 'git status [-flags]' operation."""
     git_cmd_string = "git status {}".format(" ".join(flags))
-    _execute(git_cmd_string.strip().split(" "))
+    run(git_cmd_string.strip().split(" "))
 
 
 def commit(message):
@@ -33,7 +30,7 @@ def commit(message):
         raise ValueError("No valid message/flag values received.")
     git_cmd_list = "git commit -m".split(" ")
     git_cmd_list.append(message)
-    _execute(git_cmd_list)
+    run(git_cmd_list)
     print("Files successfully committed.")
 
 
@@ -42,7 +39,7 @@ def push(server, branch):
     if not (server and branch):
         raise ValueError("Not valid server and/or branch values given.")
     git_cmd_string = "git push {0} {1}".format(server, branch)
-    _execute(git_cmd_string.strip().split(" "))
+    run(git_cmd_string.strip().split(" "))
     print("Files successfully pushed.")
 
 
@@ -51,7 +48,7 @@ def branch(name):
     if (not name) or (name == ""):
         raise ValueError("No valid branch name received.")
     git_cmd_string = "git checkout -b {}".format(name)
-    _execute(git_cmd_string.strip().split(" "))
+    run(git_cmd_string.strip().split(" "))
     print("Branch successfully created.")
 
 
@@ -60,14 +57,14 @@ def merge(from_branch, to_branch):
     if not (from_branch and to_branch):
         raise ValueError("No valid branch names received.")
     git_checkout_string = "git checkout {}".format(to_branch)
-    _execute(git_checkout_string.strip().split(" "))
+    run(git_checkout_string.strip().split(" "))
     git_merge_string = "git merge {}".format(from_branch)
-    _execute(git_merge_string.strip().split(" "))
+    run(git_merge_string.strip().split(" "))
     git_delete_branch_local = "git branch -d {}".format(from_branch)
-    _execute(git_delete_branch_local.strip().split(" "))
+    run(git_delete_branch_local.strip().split(" "))
     git_delete_branch_remote = ("git push origin --delete {}".
                                 format(from_branch))
-    _execute(git_delete_branch_remote.strip().split(" "))
+    run(git_delete_branch_remote.strip().split(" "))
     push("origin", to_branch)
     print("Merging successfully completed.")
 
@@ -75,19 +72,9 @@ def merge(from_branch, to_branch):
 # --> Utilities.
 def _changed_files():
     """Returns a list with all the changed files after the last commit."""
-    # Get all changed files, avoiding the use of shell=True.
     status = Popen(("git", "status", "-s"), stdout=PIPE)
     files = check_output(('cut', '-c4-'), stdin=status.stdout)
-    return filter(None, files.split("\n"))
-
-
-def _execute(git_cmd_list):
-    """Runs the git commands."""
-    # Python 2.X and 3.X compatibility.
-    try:
-        run(git_cmd_list)
-    except NameError:
-        call(git_cmd_list)
+    return list(filter(None, files.split(b"\n")))
 
 
 def make(commit_message, server, branch, files=_changed_files(), flags=""):
