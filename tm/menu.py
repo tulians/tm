@@ -21,7 +21,6 @@ parser.add_argument("action", help="action to perform",
 parser.add_argument("identifier", nargs="?", help="Task unique identifier")
 args = parser.parse_args()
 
-# TODO: update action pending.
 # Select action depending on argument.
 if args.action == "init":
     if pt.log:
@@ -36,29 +35,34 @@ if args.action == "init":
     print("Task manager initialized in project.")
 elif args.action == "create":
     print("New task creation.\n")
-    if sys.version_info[0] == 2:
-        identifier = raw_input("Identifier: ")
-        description = raw_input("Description: ")
-        depends_from = raw_input("Depends from: ")
-        priority = int(raw_input("Priority: "))
-    else:
-        identifier = input("Identifier: ")
-        description = input("Description: ")
-        depends_from = input("Depends from: ")
-        priority = int(input("Priority: "))
+    identifier = input("Identifier: ")
+    description = input("Description: ")
+    depends_from = input("Depends from: ")
+    priority = int(input("Priority: "))
     pt.create_task(identifier, description, depends_from, priority)
     print("Task successfully created.")
 elif args.action == "start":
     identifier = args.identifier
     pt.start_task(identifier)
     print("Task successfully labeled as started.")
-# TODO: Review what happens with the branch in this case.
+elif args.action == "update":
+    identifier = args.identifier
+    print("Update task {}\n".format(identifier))
+    updates = {}
+    description = input("New description: ")
+    depends_from = input("New dependencies: ")
+    priority = input("New priority: ")
+    if description:
+        updates["description"] = description
+    if depends_from:
+        updates["depends_from"] = depends_from
+    if priority:
+        updates["priority"] = int(priority)
+    if updates:
+        pt.update_task(identifier, **updates)
 elif args.action == "delete":
     identifier = args.identifier
     pt.delete_task(identifier)
-
-    print(os.getcwd())
-
     git_checkout_string = "git checkout master"
     run(git_checkout_string.strip().split(" "))
     git_delete_branch_local = "git branch -d {}".format(identifier)
