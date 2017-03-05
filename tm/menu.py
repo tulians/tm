@@ -1,8 +1,5 @@
-#!/usr/bin/env python
-
-# tm - Task management.
+#!/usr/bin/env python3
 # Actions to perform module.
-# Author: Julian Ailan
 # ===================================
 
 import os

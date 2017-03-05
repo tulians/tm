@@ -1,6 +1,4 @@
-# tm - Task management library.
 # Tasks module.
-# Author: Julian Ailan
 # ===================================
 
 

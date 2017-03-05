@@ -1,6 +1,4 @@
-# tm - Task management library.
 # Logger module.
-# Author: Julian Ailan
 # ===================================
 
 # Built-in modules.

@@ -1,6 +1,4 @@
-# tm - Task management library.
 # Recent tasks module.
-# Author: Julian Ailan
 # ===================================
 
 

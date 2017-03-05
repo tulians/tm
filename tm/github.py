@@ -1,6 +1,5 @@
-# tm - Task management.
+#!/usr/bin/env python3
 # Github abstraction module.
-# Author: Julian Ailan
 # ===================================
 
 # Built-in modules.

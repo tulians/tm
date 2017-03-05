@@ -1,6 +1,4 @@
-# tm - Task management library.
 # Task management module.
-# Author: Julian Ailan
 # ===================================
 
 """Provides a class for managing pending tasks tables."""
