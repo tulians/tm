@@ -20,16 +20,6 @@ args = parser.parse_args()
 source_directory = os.path.dirname(os.path.realpath(__file__))
 to_directory = executable_directory = args.path
 
-# home_dir = os.path.expanduser("~")
-# source_directory = os.path.dirname(os.path.realpath(__file__))
-# if len(sys.argv) > 1:
-#     to_directory = sys.argv[1]
-#     executable_directory = to_directory
-# #    executable_directory = sys.argv[2]
-# else:
-#     to_directory = "/opt/tm/"
-#     executable_directory = home_dir + "/bin/"
-
 
 def copy_project_files():
     """Copies project tree to the specified to_directory."""

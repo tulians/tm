@@ -47,21 +47,10 @@ $ git clone https://github.com/tulians/tm
 ```
 Extract the files from the compressed file and run:
 ```sh
-$ python tm/config.py [-installation_dir] [-executable_dir]
+$ python tm/config.py [-installation_and_executable_dir]
 ```
-By default the value of the installation directory is `/opt/tm`, and the executable directory is `~/bin`. Take into account these default options assume you have:
-
- 1. Administrator privileges and
- 2. A `~/bin` directory.
-
-In case you do not have the latter, make sure to create it and add the following line in `~/.bashrc`, so that all the commands defined in `~/bin` are loaded when a terminal window is opened:
-```sh
-export PATH=$PATH:$HOME/bin
-```
-The tool will **only** work if your project's directory has already been initialized, i.e. you have already ran `git init`, and a remote was added, using `git remote add origin [-remote_url]`.
 
 ### Todos
-  - Add *update* action to menu.
   - Add an action to perform *partial pushes* to the remote repository even though the task is still not complete.
   - Add `master`/`develop` branches to merge to.
 
