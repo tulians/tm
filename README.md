@@ -1,5 +1,5 @@
 # tm
-`tm` is a tool that allows you to manage and track the development of a project by defining **tasks**. These tasks represent features, and are synchronized with your project's *Git* repository, so that each time you create or complete a task a branch is created or merged, respectively. The branch management is performed by the tool itself, you only have to indicate when you started or completed the task.
+`tm` is a tool developed in pure Python 3 that allows you to manage and track the development of a project by defining **tasks**. These tasks represent features, and are synchronized with your project's *Git* repository, so that each time you create or complete a task a branch is created or merged, respectively. The branch management is performed by the tool itself, you only have to indicate when you started or completed the task.
 
 ### Usage
 #### Project initialization
@@ -47,7 +47,7 @@ $ git clone https://github.com/tulians/tm
 ```
 Extract the files from the compressed file and run:
 ```sh
-$ python tm/config.py [-installation_and_executable_dir]
+$ python3 tm/config.py [-installation_and_executable_dir]
 ```
 
 ### Todos
