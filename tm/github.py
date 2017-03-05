@@ -3,7 +3,6 @@
 # ===================================
 
 # Built-in modules.
-import os
 from subprocess import run, check_output, Popen, PIPE
 
 

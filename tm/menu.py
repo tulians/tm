@@ -7,6 +7,7 @@ import sys
 import time
 import argparse
 import lib.manage as m
+from subprocess import run
 
 current_directory = os.getcwd()
 os.chdir(current_directory)
@@ -55,12 +56,19 @@ elif args.action == "start":
 elif args.action == "delete":
     identifier = args.identifier
     pt.delete_task(identifier)
+
+    print(os.getcwd())
+
+    git_checkout_string = "git checkout master"
+    run(git_checkout_string.strip().split(" "))
+    git_delete_branch_local = "git branch -d {}".format(identifier)
+    run(git_delete_branch_local.strip().split(" "))
+    print("Task successfully deleted.")
 elif args.action == "completed":
     identifier = args.identifier
     pt.completed_task(identifier)
     print("Task successfully labeled as completed.")
 elif args.action == "dump":
-    print("Generates a dump file with the task database..")
     pt.dump_db()
     print("Database dump successfully generated.")
 elif args.action == "report":
