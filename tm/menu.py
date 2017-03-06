@@ -17,8 +17,10 @@ pt = m.PendingTasks(current_directory + "/.logs")
 parser = argparse.ArgumentParser(prog="tm", description="Task manager CLI")
 parser.add_argument("action", help="action to perform",
                     choices=["init", "create", "start", "update", "delete",
-                             "completed", "dump", "report"])
+                             "completed", "dump", "report", "partial"])
 parser.add_argument("identifier", nargs="?", help="Task unique identifier")
+parser.add_argument("partial_push_commit", nargs="?", help="Partial push"
+                    " commit message")
 args = parser.parse_args()
 
 # Select action depending on argument.
@@ -78,5 +80,10 @@ elif args.action == "dump":
 elif args.action == "report":
     identifier = args.identifier
     pt.generate_report(identifier)
+elif args.action == "partial":
+    identifier = args.identifier
+    if args.partial_push_commit:
+        pt.partial(identifier, args.partial_push_commit)
+        print("Commit successfully generated.")
 else:
     print("No valid option selected.")

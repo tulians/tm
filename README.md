@@ -32,13 +32,24 @@ Task successfully labels as started.
 ```
 After this point a new branch named after the *identifier* value is created. This branch is the merged with `master`/`develop` when labeled as *completed*. If a second new task is created and then started before the previous one has been labeled as completed, the merging will then be done with the branch name of the first incomplete task.
 
-#### Completed Task
+#### Completed task
 Once you completed the feature the task represents, you are ready to label it as *completed*. By doing this the branch in which this task was being developed gets merged with `master`/`develop`.
 ```sh
 $ tm completed <unique_id>
 ...
 Task successfully labeled as completed.
 ```
+
+#### Update a task
+The only task attribute that can not be modified is its identifier. The rest can be modified by running:
+```sh
+$ tm update <unique_id>
+Update task <unique_id>
+New description: ...
+New dependencies: ...
+New priority: ...
+```
+If any of the fields is left blank, then it is considered as unmodified.
 
 ### Installation
 Clone `tm` using
@@ -51,7 +62,7 @@ $ python3 tm/config.py [-installation_and_executable_dir]
 ```
 
 ### Todos
-  - Add an action to perform *partial pushes* to the remote repository even though the task is still not complete.
+  - Add an action to perform *commits* to the local repository even though the task is still not complete.
   - Add `master`/`develop` branches to merge to.
 
 ### Contact

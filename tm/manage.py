@@ -377,6 +377,18 @@ class PendingTasks(object):
             print("There is no task with that identifier waiting to be"
                   " completed.")
 
+    def partial(self, identifier, commit_message):
+        """Creates a commit.
+        Args:
+            identifier: string that uniquely identifies the task.
+            commit_message: partial changes commit message.
+        Returns:
+            No data is returned.
+        """
+        git.add_files(git._changed_files())
+        git.status("")
+        git.commit(identifier + " : " + commit_message)
+
     def dump_db(self, name="dump.sql"):
         """Dumps the content of tasks.db into a file."""
         db_connection = sqlite3.connect('tasks.db')
