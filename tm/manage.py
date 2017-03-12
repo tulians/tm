@@ -28,6 +28,7 @@ class PendingTasks(object):
         # their corresponding table. The length of this queue should not be
         # greater than 10 tasks.
         self.recent_tasks = TaskCache(10)
+        self.partials_exist = False
 
     def __contains__(self, task):
         return self._is_task_duplicate(task)
@@ -320,7 +321,7 @@ class PendingTasks(object):
             print("Cant delete the desired task. Please, verify if the given"
                   " 'identifier' is correctly spelled.")
 
-    def completed_task(self, identifier):
+    def completed_task(self, identifier, partials=False):
         """Labels a task as completed.
         Args:
             identifier: string that uniquely identifies the task.
@@ -338,12 +339,14 @@ class PendingTasks(object):
             git.make(
                 completed_task.info["description"],
                 "origin",
-                completed_task.info["identifier"]
+                completed_task.info["identifier"],
+                partials
             )
             self.log.add_entry("Pushed to branch: OK", "Successfully pushed"
                                " changes to branch.",
                                time.strftime("%Y-%m-%d %H:%M:%S"))
-            git.merge(completed_task.info["identifier"], "master")
+            git.merge(completed_task.info["identifier"], "master", partials)
+            self.partials_exist = False
             self.log.add_entry("Merged with master: OK", "Successfully merged"
                                " feature branch with master.",
                                time.strftime("%Y-%m-%d %H:%M:%S"))
@@ -388,6 +391,7 @@ class PendingTasks(object):
         git.add_files(git._changed_files())
         git.status("")
         git.commit(identifier + " : " + commit_message)
+        self.partials_exist = True
 
     def dump_db(self, name="dump.sql"):
         """Dumps the content of tasks.db into a file."""

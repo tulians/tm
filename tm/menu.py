@@ -72,7 +72,7 @@ elif args.action == "delete":
     print("Task successfully deleted.")
 elif args.action == "completed":
     identifier = args.identifier
-    pt.completed_task(identifier)
+    pt.completed_task(identifier, pt.partials_exist)
     print("Task successfully labeled as completed.")
 elif args.action == "dump":
     pt.dump_db()
