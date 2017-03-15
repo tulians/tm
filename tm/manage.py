@@ -394,7 +394,7 @@ class PendingTasks(object):
         git.add_files(git._changed_files())
         git.status("")
         git.commit(identifier + " : " + commit_message)
-        self.partials_exist["exists"] = True
+        self.partials_exist = True
 
     def dump_db(self, name="dump.sql"):
         """Dumps the content of tasks.db into a file."""
