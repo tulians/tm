@@ -13,14 +13,15 @@ import utils as u
 from logger import Logger
 from cache import TaskCache
 from task import Task, labels
+from partials import Partials
 
 
 class PendingTasks(object):
     """Manages the creation, modification and status of pending tasks."""
 
-    def __init__(self, log_file_full_path="/opt/tm/logs/", project_name=None):
+    def __init__(self, path="/opt/tm/logs/", project_name=None):
         """Tasks manager constructor"""
-        self.log = Logger(log_file_full_path, project_name)
+        self.log = Logger(path, project_name)
         if not self._check_if_exists():
             self.create_table("NotStarted", "WorkingOn", "Completed")
         # Use this queue to save the most recent new, modified, on process or
@@ -28,7 +29,9 @@ class PendingTasks(object):
         # their corresponding table. The length of this queue should not be
         # greater than 10 tasks.
         self.recent_tasks = TaskCache(10)
-        self.partials_exist = False
+        # Lets the application know whether there are partial commits left to
+        # push to remote repository.
+        self.partials_exist = Partials(path)
 
     def __contains__(self, task):
         return self._is_task_duplicate(task)
@@ -391,7 +394,7 @@ class PendingTasks(object):
         git.add_files(git._changed_files())
         git.status("")
         git.commit(identifier + " : " + commit_message)
-        self.partials_exist = True
+        self.partials_exist["exists"] = True
 
     def dump_db(self, name="dump.sql"):
         """Dumps the content of tasks.db into a file."""
