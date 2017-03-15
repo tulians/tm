@@ -21,6 +21,7 @@ class Partials(object):
 
         self.partials_path = creation_path + ".status.txt"
 
+        # Don't modify the file if it already exists.
         if not os.path.isfile(self.partials_path):
             self.status = False
             with open(self.partials_path, "w") as partials:
@@ -40,5 +41,6 @@ class Partials(object):
 
     @status.setter
     def status(self, value):
+        # Update both the object and the file.
         self._status = {"exist": value}
         self._set_status(value)
