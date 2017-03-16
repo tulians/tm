@@ -395,6 +395,10 @@ class PendingTasks(object):
         git.status("")
         git.commit(identifier + " : " + commit_message)
         self.partials_exist = True
+        self.log.add_entry("Partial added: OK",
+                           "Added partial commit: {} : {}".format(
+                                identifier, commit_message),
+                           time.strftime("%Y-%m-%d %H:%M:%S"))
 
     def dump_db(self, name="dump.sql"):
         """Dumps the content of tasks.db into a file."""
