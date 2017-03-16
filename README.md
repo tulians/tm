@@ -51,6 +51,12 @@ New priority: ...
 ```
 If any of the fields is left blank, then it is considered as unmodified.
 
+#### Local repository commits
+Local commits can be performed for a clearer workflow. These are then pushed to the remote repository when the task is completed. This can be achieved by running:
+```sh
+$ tm partial <unique_id> <partial_commit_msg>
+```
+
 ### Installation
 Clone `tm` using
 ```sh
@@ -62,8 +68,7 @@ $ python3 tm/config.py [-installation_and_executable_dir]
 ```
 
 ### Todos
-  - Add an action to perform *commits* to the local repository even though the task is still not complete.
-  - Add `master`/`develop` branches to merge to.
+- Add `master`/`develop` branches to merge to.
 
 ### Contact
 This project is under development, so if you found any aspect that can be optimized or found a bug that must be fixed, please open an issue. Alternatively, you can contact me by e-mail on jtulians@gmail.com.

@@ -50,7 +50,7 @@ def branch(name):
     print("Branch successfully created.")
 
 
-def merge(from_branch, to_branch, partials=False):
+def merge(from_branch, to_branch):
     """Performs the merging of two branches."""
     if not (from_branch and to_branch):
         raise ValueError("No valid branch names received.")
@@ -60,10 +60,9 @@ def merge(from_branch, to_branch, partials=False):
     run(git_merge_string.strip().split(" "))
     git_delete_branch_local = "git branch -d {}".format(from_branch)
     run(git_delete_branch_local.strip().split(" "))
-    if not partials:
-        git_delete_branch_remote = ("git push origin --delete {}".
-                                    format(from_branch))
-        run(git_delete_branch_remote.strip().split(" "))
+    git_delete_branch_remote = ("git push origin --delete {}".
+                                format(from_branch))
+    run(git_delete_branch_remote.strip().split(" "))
     push("origin", to_branch)
     print("Merging successfully completed.")
 
@@ -79,7 +78,9 @@ def _changed_files():
 def make(commit_message, server, branch, partials=False,
          files=_changed_files(), flags=""):
     """Pushes commits to the remote repository."""
-    if not partials:
+    print("Labels state: {}".format(partials.status["exist"]))
+    if not partials.status["exist"]:
+        print("No preexisting partial commits.")
         add_files(files)
         status(flags)
         commit(commit_message)

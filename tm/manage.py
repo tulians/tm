@@ -324,10 +324,12 @@ class PendingTasks(object):
             print("Cant delete the desired task. Please, verify if the given"
                   " 'identifier' is correctly spelled.")
 
-    def completed_task(self, identifier, partials=False):
+    def completed_task(self, identifier, partials=False, branch="master"):
         """Labels a task as completed.
         Args:
             identifier: string that uniquely identifies the task.
+            partials: indicates if local commits exist.
+            branch: remote branch to push to.
         Returns:
             The recently labeled task is returned.
         """
@@ -348,10 +350,11 @@ class PendingTasks(object):
             self.log.add_entry("Pushed to branch: OK", "Successfully pushed"
                                " changes to branch.",
                                time.strftime("%Y-%m-%d %H:%M:%S"))
-            git.merge(completed_task.info["identifier"], "master", partials)
+            git.merge(completed_task.info["identifier"], branch)
             self.partials_exist = False
-            self.log.add_entry("Merged with master: OK", "Successfully merged"
-                               " feature branch with master.",
+            self.log.add_entry("Merged with {}: OK".format(branch),
+                               "Successfully merged feature branch with "
+                               "{}.".format(branch),
                                time.strftime("%Y-%m-%d %H:%M:%S"))
             if status:
                 if completed_task in self.recent_tasks:
